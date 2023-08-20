@@ -1,0 +1,12 @@
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\bin\Debug\net7.0\SatSolverLib.deps.json
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\bin\Debug\net7.0\SatSolverLib.dll
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\bin\Debug\net7.0\SatSolverLib.pdb
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.csproj.AssemblyReference.cache
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.AssemblyInfoInputs.cache
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.AssemblyInfo.cs
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.csproj.CoreCompileInputs.cache
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.dll
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\refint\SatSolverLib.dll
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\SatSolverLib.pdb
+C:\Users\Denis\Documents\RiderProjects\SatSolverLib\obj\Debug\net7.0\ref\SatSolverLib.dll
