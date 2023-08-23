@@ -1,19 +1,12 @@
 ﻿using System.Text;
-using SatSolverLib;
 
-namespace SATSolver;
+namespace SatSolverLib;
 
 public static class DimacsParser
 {
     private const char CommentChar = 'c';
     private const string AmountLineStarter = "p cnf";
     private const string LineEndChar = "0";
-
-
-    private const string Sat = "s SATISFIABLE";
-    private const string Unsat = "s NOT SATISFIABLE";
-
-    private const char AnswerStartChar = 'v';
 
     public static Cnf ParseText(string text)
     {
@@ -68,30 +61,6 @@ public static class DimacsParser
             readLines++;
         }
 
-        return new Cnf(clauses);
-    }
-    
-    public static void WriteModel(Action<string> writer, List<(int, bool)>? model)
-    {
-        if (model == null)
-        {
-            writer.Invoke(Unsat);
-            return;
-        }
-
-        var builder = new StringBuilder(Sat);
-        builder.Append('\n');
-        builder.Append(AnswerStartChar);
-        builder.Append(' ');
-
-        foreach (var literalValue in model)
-        {
-            var abs = Math.Abs(literalValue.Item1);
-            builder.Append(literalValue.Item2 ? abs : -abs);
-            builder.Append(' ');
-        }
-
-        builder.Append(LineEndChar);
-        writer.Invoke(builder.ToString());
+        return new Cnf(clauses, countVars);
     }
 }

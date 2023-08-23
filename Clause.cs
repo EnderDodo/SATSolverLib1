@@ -1,4 +1,4 @@
-﻿namespace SATSolver;
+﻿namespace SatSolverLib;
 
 public class Clause
 {
@@ -29,5 +29,12 @@ public class Clause
     public override int GetHashCode()
     {
         return HashCode.Combine(Literals);
+    }
+
+    public override string ToString()
+    {
+        if (IsEmptyClause) return "(emptyClause)";
+        string result = Literals.Aggregate("(", (current, l) => current + (l + ", "));
+        return result.Remove(result.Length - 2) + ')';
     }
 }

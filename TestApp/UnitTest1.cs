@@ -1,4 +1,4 @@
-using SATSolver;
+using SatSolverLib;
 
 namespace TestApp;
 
@@ -15,7 +15,7 @@ public class Tests
     public void Test_UnsatCase_ReturnsUnsat(string filePath)
     {
         var cnf = DimacsParser.ParseFile(filePath);
-        var result = Solver.SolveSat(cnf, out cnf.Solution);
+        var result = Solver.SolveSat(cnf, out var solution);
         Assert.That(!result);
     }
 
@@ -31,8 +31,8 @@ public class Tests
     public void Test_SatCase_ReturnsSat(string filePath)
     {
         var cnf = DimacsParser.ParseFile(filePath);
-        var result = Solver.SolveSat(cnf, out cnf.Solution);
+        var result = Solver.SolveSat(cnf, out var solution);
 
-        Assert.That(result && cnf.Solution != null);
+        Assert.That(result && solution != null);
     }
 }

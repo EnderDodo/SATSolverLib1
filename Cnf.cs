@@ -1,67 +1,82 @@
-﻿using SATSolver;
-
-namespace SatSolverLib;
+﻿namespace SatSolverLib;
 
 public class Cnf
 {
     public HashSet<Clause> Clauses;
     public Literal[] Literals;
-    public Literal[] Solution;
+    public int CountVars;
 
-    public Cnf(IEnumerable<Clause> clauses)
+    public Cnf(IEnumerable<Clause> clauses, int countVars)
     {
         Clauses = new HashSet<Clause>(clauses);
-        Literals = Clauses.SelectMany(clause => clause.Literals).ToArray();
-        var literals = Literals
-            .Select(literal => literal.Index).Distinct()
-            .Select(i => new Literal(i, true)).ToArray();
-        Solution = new Literal[literals.Length + 1];
-        for (int i = 0; i < Solution.Length; i++)
-        {
-            Solution[i] = new Literal(0, false);
-        }
+        Literals = Clauses.SelectMany(clause => clause.Literals).Distinct().ToArray();
+        CountVars = countVars;
     }
 
-    //in the first iteration "intermediateSolution" should be cnf.Solution
     public static bool Dpll(Cnf cnf, Literal[] intermediateSolution, out Literal[] solution)
     {
         solution = new Literal[intermediateSolution.Length];
         intermediateSolution.CopyTo(solution, 0);
 
         //unit propagation
-        foreach (var clauseLiteral in from clause in cnf.Clauses
-                 where clause.IsUnitClause
-                 select clause.Literals.First())
+        while (cnf.Literals.Length > 0)
         {
-            solution[clauseLiteral.Index] = clauseLiteral;
+            var unitLiterals = from clause in cnf.Clauses
+                where clause.IsUnitClause
+                select clause.Literals.First();
+            var array = unitLiterals as Literal[] ??
+                        unitLiterals.ToArray(); //arraying "to avoid possible reenumeration"
+            if (!array.Any())
+                break;
+            var clauseLiteral = array.First();
+
+            if (solution[clauseLiteral.Index].IsComplement(clauseLiteral))
+                return false;
+
+            solution[clauseLiteral.Index] = new Literal(clauseLiteral.Index, clauseLiteral.Sign);
 
             foreach (var clause in cnf.Clauses.Where(clause => clause.Literals.Contains(clauseLiteral)))
             {
                 cnf.Clauses.Remove(clause);
             }
 
-            var notClauseLiteral = new Literal(clauseLiteral.Index, !clauseLiteral.Sign);
-
-            foreach (var clause in cnf.Clauses.Where(clause => clause.Literals.Contains(notClauseLiteral)))
+            foreach (var clause in cnf.Clauses.Where(clause => clause.Literals.Contains(clauseLiteral.Complement())))
             {
-                clause.Literals.Remove(notClauseLiteral);
+                clause.Literals.Remove(clauseLiteral.Complement());
             }
+
+            cnf.Literals = cnf.Clauses.SelectMany(clause2 => clause2.Literals).Distinct().ToArray();
         }
 
         //pure literal elimination
-        foreach (var literal in cnf.Literals)
+        while (cnf.Literals.Length > 0)
         {
-            bool isPure = (from clause in cnf.Clauses where clause.Literals.Contains(literal) select clause).All(
-                clause => !clause.Literals.Any(l => l.Index == literal.Index && l.Sign != literal.Sign));
-            if (isPure)
+            int i = 0;
+            foreach (var literal in cnf.Literals)
             {
-                solution[literal.Index] = literal; 
-
-                foreach (var clause in cnf.Clauses.Where(clause => clause.Literals.Contains(literal)))
+                bool isPure = !cnf.Literals.Contains(literal.Complement());
+                // (from clause in cnf.Clauses where clause.Literals.Contains(literal) select clause).All(
+                //     clause => !clause.Literals.Any(l => l.Index == literal.Index && l.Sign != literal.Sign));
+                if (isPure)
                 {
-                    cnf.Clauses.Remove(clause);
+                    if (solution[literal.Index].IsComplement(literal))
+                        return false;
+
+                    solution[literal.Index] = new Literal(literal.Index, literal.Sign);
+
+                    foreach (var clause in cnf.Clauses.Where(clause => clause.Literals.Contains(literal)))
+                    {
+                        cnf.Clauses.Remove(clause);
+                    }
+
+                    cnf.Literals = cnf.Clauses.SelectMany(clause2 => clause2.Literals).Distinct().ToArray();
+                    i++;
+                    break;
                 }
             }
+
+            if (i == 0)
+                break;
         }
 
         //stop conditions
@@ -71,31 +86,30 @@ public class Cnf
             return false;
 
         //select one literal
-        Literal l = new Literal(0, true);
-
-        for (int i = 1; i < intermediateSolution.Length; i++)
-        {
-            if (intermediateSolution[i].Index == 0)
-            {
-                l = new Literal(i, true);
-                break;
-            }
-        }
-        //if for-loop does not define l, it means that, actually, DPLL finished working already
-        if (l.Equals(new Literal(0, true)))
-            return true;
-
+        
+        // Literal l = new Literal(0, false);
+        //
+        // for (int i = 1; i < intermediateSolution.Length; i++)
+        // {
+        //     if (intermediateSolution[i].Index == 0)
+        //     {
+        //         l = new Literal(i, true);
+        //         break;
+        //     }
+        // }
+        Literal l = new Literal(cnf.Literals.First().Index, cnf.Literals.First().Sign);
+        
         //recursion
-        var cnf1 = new Clause[cnf.Clauses.Count + 1];
-        cnf.Clauses.CopyTo(cnf1, 0);
-        cnf1[^1] = new Clause(l);
+        var clauses1 = new Clause[cnf.Clauses.Count + 1];
+        cnf.Clauses.CopyTo(clauses1, 0);
+        clauses1[^1] = new Clause(l);
 
-        var cnf2 = new Clause[cnf.Clauses.Count + 1];
-        cnf.Clauses.CopyTo(cnf2, 0);
-        cnf2[^1] = new Clause(new Literal(l.Index, !l.Sign));
+        var clauses2 = new Clause[cnf.Clauses.Count + 1];
+        cnf.Clauses.CopyTo(clauses2, 0);
+        clauses2[^1] = new Clause(l.Complement());
 
-        bool dpll1 = Dpll(new Cnf(cnf1), solution, out var solution1);
-        bool dpll2 = Dpll(new Cnf(cnf2), solution, out var solution2);
+        bool dpll1 = Dpll(new Cnf(clauses1, cnf.CountVars), solution, out var solution1);
+        bool dpll2 = Dpll(new Cnf(clauses2, cnf.CountVars), solution, out var solution2);
 
         if (dpll1)
             solution1.CopyTo(solution, 0);
@@ -103,5 +117,10 @@ public class Cnf
             solution2.CopyTo(solution, 0);
 
         return dpll1 || dpll2;
+    }
+
+    public override string ToString()
+    {
+        return Clauses.Count == 0 ? "EmptyCNF" : Clauses.Aggregate("", (current, clause) => current + (clause + " "));
     }
 }

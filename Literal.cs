@@ -1,4 +1,4 @@
-﻿namespace SATSolver;
+﻿namespace SatSolverLib;
 
 public class Literal
 {
@@ -24,5 +24,22 @@ public class Literal
     public override int GetHashCode()
     {
         return HashCode.Combine(Index, Sign);
+    }
+
+    public bool IsComplement(Literal literal)
+    {
+        return Index.Equals(literal.Index) && Sign.Equals(!literal.Sign);
+    }
+
+    public Literal Complement()
+    {
+        return new Literal(Index, !Sign);
+    }
+
+    public override string ToString()
+    {
+        string result = "";
+        if (!Sign) result += '-';
+        return result + Index;
     }
 }
