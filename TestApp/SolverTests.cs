@@ -1,8 +1,6 @@
-using SatSolverLib;
-
 namespace TestApp;
 
-public class Tests
+public class SolverTests
 {
     private static IEnumerable<string> _unsatCases = new[]
     {
@@ -15,8 +13,8 @@ public class Tests
     public void Test_UnsatCase_ReturnsUnsat(string filePath)
     {
         var cnf = DimacsParser.ParseFile(filePath);
-        var result = Solver.SolveSat(cnf, out var solution);
-        Assert.That(!result);
+        var result = Solver.Dpll(cnf, out var solution);
+        Assert.That(result, Is.Not.True);
     }
 
     private static IEnumerable<string> _satCases = new[]
@@ -31,8 +29,8 @@ public class Tests
     public void Test_SatCase_ReturnsSat(string filePath)
     {
         var cnf = DimacsParser.ParseFile(filePath);
-        var result = Solver.SolveSat(cnf, out var solution);
+        var result = Solver.Dpll(cnf, out var solution);
 
-        Assert.That(result && solution != null);
+        Assert.That(result, Is.True);
     }
 }

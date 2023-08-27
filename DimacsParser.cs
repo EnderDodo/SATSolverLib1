@@ -42,7 +42,7 @@ public static class DimacsParser
                 continue;
             }
 
-            var literals = new List<Literal>();
+            var literals = new List<(int, bool)>();
 
             foreach (var literalStr in line.Split())
             {
@@ -54,13 +54,13 @@ public static class DimacsParser
                 if (Math.Abs(index) > countVars)
                     throw new ArgumentException($"Too large index; absolute value of {index} is greater than {countVars}");
 
-                literals.Add(new Literal(Math.Abs(index), index > 0));
+                literals.Add((Math.Abs(index), index > 0));
             }
 
             clauses.Add(new Clause(literals));
             readLines++;
         }
 
-        return new Cnf(clauses, countVars);
+        return new Cnf(clauses);
     }
 }
