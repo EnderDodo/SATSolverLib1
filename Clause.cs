@@ -2,18 +2,18 @@
 
 public class Clause
 {
-    public HashSet<(int, bool)> Literals;
+    public HashSet<int> Literals;
     public bool IsUnitClause => Literals.Count == 1;
     public bool IsEmptyClause => Literals.Count == 0;
 
-    public Clause(params (int, bool)[] literals)
+    public Clause(params int[] literals)
     {
-        Literals = new HashSet<(int, bool)>(literals);
+        Literals = new HashSet<int>(literals);
     }
     
-    public Clause(IEnumerable<(int, bool)> literals)
+    public Clause(IEnumerable<int> literals)
     {
-        Literals = new HashSet<(int, bool)>(literals);
+        Literals = new HashSet<int>(literals);
     }
 
     public override bool Equals(object? obj)
@@ -26,10 +26,8 @@ public class Clause
     
         return Literals.SetEquals(other.Literals);
     }
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Literals);
-    }
+    public override int GetHashCode() => 2;
+    
 
     public override string ToString()
     {

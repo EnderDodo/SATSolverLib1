@@ -42,25 +42,25 @@ public static class DimacsParser
                 continue;
             }
 
-            var literals = new List<(int, bool)>();
+            var literals = new List<int>();
 
             foreach (var literalStr in line.Split())
             {
                 if (literalStr == LineEndChar)
                     break;
 
-                var index = Convert.ToInt32(literalStr);
+                var value = Convert.ToInt32(literalStr);
 
-                if (Math.Abs(index) > countVars)
-                    throw new ArgumentException($"Too large index; absolute value of {index} is greater than {countVars}");
+                if (Math.Abs(value) > countVars)
+                    throw new ArgumentException($"Too large index; absolute value of {value} is greater than {countVars}");
 
-                literals.Add((Math.Abs(index), index > 0));
+                literals.Add(value);
             }
 
             clauses.Add(new Clause(literals));
             readLines++;
         }
 
-        return new Cnf(clauses);
+        return new Cnf(clauses, countVars);
     }
 }

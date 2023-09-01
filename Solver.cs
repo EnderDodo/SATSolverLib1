@@ -2,30 +2,40 @@
 
 public static class Solver
 {
-    public static int Counter = 0;
+    // public static int Counter = 0;
 
-    public static bool Dpll(Cnf cnf, bool[] intermediateSolution, out bool[] solution)
+    public static bool Dpll(Cnf cnf, bool[] intSolution, out bool[] solution)
     {
-        solution = new bool[intermediateSolution.Length];
-        intermediateSolution.CopyTo(solution, 0);
-
+        solution = new bool[intSolution.Length];
+        intSolution.CopyTo(solution, 0);
         while (cnf.UnitClause is { } unitClause)
         {
             var unitLiteral = unitClause.Literals.Single();
+            solution[Math.Abs(unitLiteral)] = unitLiteral > 0;
             cnf = cnf.UnitPropagation(unitLiteral);
-            solution[unitLiteral.Item1] = unitLiteral.Item2;
         }
 
         //pure literal elimination
-        while (cnf.PureLiteral is { } pureLiteral)
+        while (cnf.PureLiteral != 0)
         {
-            cnf = cnf.PureLiteralElimination(pureLiteral);
-            solution[pureLiteral.Item1] = pureLiteral.Item2;
+            solution[Math.Abs(cnf.PureLiteral)] = cnf.PureLiteral > 0;
+            cnf = cnf.PureLiteralElimination(cnf.PureLiteral);
         }
+
+        // Counter++;
+        //
+        // if (Counter == 10)
+        // {
+        //     Console.WriteLine(60);
+        // }
 
         //stop conditions
         if (!cnf.Clauses.Any())
+        {
+            //Console.WriteLine(Counter);
             return true;
+        }
+
         if (cnf.Clauses.Any(clause => clause.IsEmptyClause))
             return false;
 
@@ -33,39 +43,32 @@ public static class Solver
         var l = cnf.Literals.First();
 
         //recursion
-        var clauses1 = new Clause[cnf.Clauses.Count + 1];
-        cnf.Clauses.CopyTo(clauses1, 1);
-        clauses1[0] = new Clause(l);
+        var clausesClone1 = cnf.Clauses.Select(clause => new Clause(clause.Literals));
+        var clauses1 = new HashSet<Clause>(clausesClone1) { new Clause(l) };
 
         bool dpll1 = Dpll(new Cnf(clauses1), solution, out var solution1);
+        bool dpll2 = false;
 
-        if (dpll1)
+        if (dpll1) solution1.CopyTo(solution, 0);
+        else
         {
-            solution1.CopyTo(solution, 0);
-            return true;
+            var clausesClone2 = cnf.Clauses.Select(clause => new Clause(clause.Literals));
+            var clauses2 = new HashSet<Clause>(clausesClone2) { new Clause(-l) };
+            dpll2 = Dpll(new Cnf(clauses2), solution, out var solution2);
+            if (dpll2)
+            {
+                solution2.CopyTo(solution, 0);
+            }
         }
 
-        var clauses2 = new Clause[cnf.Clauses.Count + 1];
-        cnf.Clauses.CopyTo(clauses2, 1);
-        clauses2[0] = new Clause((l.Item1, !l.Item2));
-        bool dpll2 = Dpll(new Cnf(clauses2), solution, out var solution2);
-        if (dpll2)
-        {
-            solution2.CopyTo(solution, 0);
-            return true;
-        }
-
-        return false;
+        return dpll1 || dpll2;
     }
 
     public static bool Dpll(Cnf cnf, out bool[] solution)
     {
-        var intSolution = new bool[cnf.CountVars + 1];
-        for (int i = 0; i < intSolution.Length; i++)
-        {
-            intSolution[i] = false;
-        }
+        var l = cnf.Literals.First();
 
+        var intSolution = new bool[cnf.CountVars + 1];
         return Dpll(cnf, intSolution, out solution);
     }
 }
