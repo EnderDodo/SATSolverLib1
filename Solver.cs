@@ -49,7 +49,11 @@ public static class Solver
         bool dpll1 = Dpll(new Cnf(clauses1), solution, out var solution1);
         bool dpll2 = false;
 
-        if (dpll1) solution1.CopyTo(solution, 0);
+        if (dpll1)
+        {
+            solution1.CopyTo(solution, 0);
+            solution[0] = true;
+        }
         else
         {
             var clausesClone2 = cnf.Clauses.Select(clause => new Clause(clause.Literals));
@@ -58,6 +62,7 @@ public static class Solver
             if (dpll2)
             {
                 solution2.CopyTo(solution, 0);
+                solution[0] = true;
             }
         }
 

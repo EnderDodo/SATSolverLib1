@@ -8,7 +8,7 @@ public class Cnf
 
     public Cnf(IEnumerable<Clause> clauses)
     {
-        Clauses = new HashSet<Clause>(clauses);
+        Clauses = new HashSet<Clause>(clauses.Select(clause => new Clause(clause.Literals)));
         Literals = Clauses.SelectMany(clause => clause.Literals).Distinct().ToHashSet();
         CountVars = Literals.Select(Math.Abs).Distinct().Count();
     }
@@ -41,8 +41,8 @@ public class Cnf
 
     public Cnf UnitPropagation(int unitLiteral)
     {
-        var newClauses = new HashSet<Clause>(Clauses);
-        foreach (var clause in Clauses)
+        var newClauses = new HashSet<Clause>(Clauses.Select(clause => new Clause(clause.Literals)));
+        foreach (var clause in newClauses)
         {
             if (clause.Literals.Contains(unitLiteral))
             {
@@ -57,7 +57,7 @@ public class Cnf
 
     public Cnf PureLiteralElimination(int pureLiteral)
     {
-        var newClauses = new HashSet<Clause>(Clauses);
+        var newClauses = new HashSet<Clause>(Clauses.Select(clause => new Clause(clause.Literals)));
         newClauses.RemoveWhere(clause => clause.Literals.Contains(pureLiteral));
         return new Cnf(newClauses);
     }
